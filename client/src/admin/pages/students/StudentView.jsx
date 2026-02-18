@@ -6,10 +6,12 @@ import {
   Download, CheckCircle, Clock, Image as ImageIcon, File as FileIcon,
 } from "lucide-react";
 import PageLayout from "../../components/PageLayout";
+import { getToken } from "../../../auth/storage";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
-
+  const authHeaders = () => ({
+    Authorization: `Bearer ${getToken()}`,
+  });
 const statusColor = (s = "") => {
   switch (s.toUpperCase()) {
     case "ACTIVE":    return "bg-green-100 text-green-700 border-green-200";

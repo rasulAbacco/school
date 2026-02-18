@@ -5,7 +5,7 @@ import {
   Mail, Phone, Loader2, AlertCircle, RefreshCw,
 } from "lucide-react";
 import PageLayout from "../../components/PageLayout";
-import AddStudent from "./AddStudents";
+// import AddStudent from "./AddStudents";
 import { getToken } from "../../../auth/storage";
 
 const API_URL = import.meta.env.VITE_API_URL;

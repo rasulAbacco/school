@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, MapPin, Upload, X, Loader2, AlertCircle, Lock, Heart, Users, BookOpen, CheckCircle, FileText, Plus, Trash2, Image as ImgIcon, File as FileIcon, Save, ArrowLeft, Eye, EyeOff, GraduationCap, Activity, ChevronRight, Shield, BadgeCheck } from "lucide-react";
 import PageLayout from "../../components/PageLayout";
+import { getToken } from "../../../auth/storage";
 
 const API = import.meta.env.VITE_API_URL;
-const tok = () => localStorage.getItem("token");
-const auth = () => ({ Authorization: `Bearer ${tok()}` });
+const auth = () => ({
+  Authorization: `Bearer ${getToken()}`,
+});
 const toBlood = v => v ? v.toUpperCase().replace(/\+/g,"_PLUS").replace(/-/g,"_MINUS") : undefined;
 const frBlood = v => v ? v.replace("_PLUS","+").replace("_MINUS","-") : "";
 const fmtB = b => !b?"":b<1024?`${b} B`:b<1048576?`${(b/1024).toFixed(1)} KB`:`${(b/1048576).toFixed(1)} MB`;
