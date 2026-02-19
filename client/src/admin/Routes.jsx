@@ -18,7 +18,7 @@ import MeetingsList from "./pages/meeting/MeetingsList";
 import CurriculumList from "./pages/curriculum/CurriculumList";
 function App() {
   return (
-    <Router>
+
       <Routes>
         {/* Dashboard Route */}
         <Route path="/" element={<Dashboard />} />
@@ -44,7 +44,6 @@ function App() {
         {/* Redirect any unknown route to dashboard */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </Router>
   );
 }
 
