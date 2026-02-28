@@ -10,7 +10,7 @@ import userRoutes from "./superAdmin/routes/users.Routes.js"; // ← ADD
 import analyticsRouter from "./superAdmin/routes/analytics.Routes.js";
 import financeProfileRoutes from "./superAdmin/routes/financeProfile.routes.js";
 
-import classSectionRoutes from "./staffRoutes/classSectionRoutes.js";
+// import classSectionRoutes from "./staffRoutes/classSectionRoutes.js";
 import classSectionRoutes, {
   streamsRouter,
   coursesRouter,
