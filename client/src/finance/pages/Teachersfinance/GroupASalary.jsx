@@ -7,7 +7,7 @@ import {
 import React, { useState, useEffect, useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+const API_URL = import.meta.env.VITE_API_URL;
 export default function GroupASalary() {
     const [search, setSearch] = useState("");
     const [schoolTeachers, setSchoolTeachers] = useState([]);
@@ -49,14 +49,14 @@ export default function GroupASalary() {
     const openDeleteModal = (salary) => { setSelectedSalary({ id: salary.id }); setDeleteModal(true); };
     const openHistoryModal = async (salary) => {
         setSelectedSalary(salary);
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/history/${salary.teacher?.id}`, { headers: { Authorization: `Bearer ${tok()}` } });
+        const res = await fetch(`${API_URL}/api/teachers/salary/history/${salary.teacher?.id}`, { headers: { Authorization: `Bearer ${tok()}` } });
         setSalaryHistory(await res.json()); setHistoryModal(true);
     };
     const openSlipModal = (salary) => { setSelectedSalary(salary); setSlipModal(true); };
 
     const updateSalary = async () => {
         if (!selectedSalary?.id) return;
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/update/${selectedSalary.id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/update/${selectedSalary.id}`, {
             method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok()}` },
             body: JSON.stringify({ bonus, deductions: deduction })
         });
@@ -68,7 +68,7 @@ export default function GroupASalary() {
 
     const deleteSalary = async () => {
         if (!selectedSalary?.id) return;
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/delete/${selectedSalary.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${tok()}` } });
+        const res = await fetch(`${API_URL}/api/teachers/salary/delete/${selectedSalary.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${tok()}` } });
         const data = await res.json();
         if (!res.ok) { alert(data.message); return; }
         alert("Salary Deleted Successfully"); setDeleteModal(false);
@@ -77,7 +77,7 @@ export default function GroupASalary() {
 
     const createSalary = async () => {
         if (!selectedTeacher) { alert("Please select teacher"); return; }
-        const res = await fetch("http://localhost:5000/api/teachers/salary/create", {
+        const res = await fetch(`${API_URL}/api/teachers/salary/create`, {
             method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok()}` },
             body: JSON.stringify({ teacherId: selectedTeacher, month: new Date().getMonth() + 1, year: new Date().getFullYear(), bonus, deductions: deduction })
         });
@@ -89,19 +89,19 @@ export default function GroupASalary() {
     };
 
     const fetchSchools = async () => {
-        const res = await fetch("http://localhost:5000/api/teachers/salary/schools", { headers: { Authorization: `Bearer ${tok()}` } });
+        const res = await fetch(`${API_URL}/api/teachers/salary/schools`, { headers: { Authorization: `Bearer ${tok()}` } });
         const data = await res.json(); setSchools(data);
     };
 
     const fetchTeachersBySchool = async (id) => {
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/teachers-by-school/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
+        const res = await fetch(`${API_URL}api/teachers/salary/teachers-by-school/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
         if (!res.ok) { setDropdownTeachers([]); return; }
         setDropdownTeachers(await res.json());
     };
 
     const payTeacherSalary = async (salaryId) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/teachers/salary/pay/${salaryId}`, { method: "PATCH", headers: { Authorization: `Bearer ${tok()}` } });
+            const res = await fetch(`${API_URL}/api/teachers/salary/pay/${salaryId}`, { method: "PATCH", headers: { Authorization: `Bearer ${tok()}` } });
             const data = await res.json();
             if (!res.ok) { alert(data.message); return; }
             alert("Salary Paid Successfully");
@@ -122,7 +122,7 @@ export default function GroupASalary() {
     const refreshTeachers = async (id) => {
         if (!id) return;
         try {
-            const res = await fetch(`http://localhost:5000/api/teachers/salary/list/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
+            const res = await fetch(`${API_URL}/api/teachers/salary/list/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
             if (!res.ok) { setSchoolTeachers([]); return; }
             const data = await res.json();
             setSchoolTeachers(Array.isArray(data) ? data : []);
@@ -130,7 +130,7 @@ export default function GroupASalary() {
     };
 
     const fetchAllSalaryHistory = async (id) => {
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/history-by-school/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
+        const res = await fetch(`${API_URL}/api/teachers/salary/history-by-school/${id}`, { headers: { Authorization: `Bearer ${tok()}` } });
         const data = await res.json(); setAllSalaryHistory(data);
     };
 

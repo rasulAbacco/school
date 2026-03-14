@@ -1417,6 +1417,36 @@ model GroupBStaffSalary {
   salaryPaid Boolean @default(false)
 }
 
+model GroupCStaffSalary {
+  id Int @id @default(autoincrement())
+
+  name        String
+  designation String
+  school      String
+  department  String?
+
+  basicSalary Decimal
+  allowances  Decimal
+
+  status     String  @default("Active")
+  salaryPaid Boolean @default(false)
+}
+
+model GroupDStaffSalary {
+  id Int @id @default(autoincrement())
+
+  name        String
+  designation String
+  school      String
+  department  String?
+
+  basicSalary Decimal
+  allowances  Decimal
+
+  status     String  @default("Active")
+  salaryPaid Boolean @default(false)
+}
+
 model SubjectSyllabus {
   id String @id @default(uuid())
 
@@ -1939,4 +1969,48 @@ model StudentAward {
   @@index([academicYearId])
   @@index([classSectionId])
   @@map("student_awards")
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ADD THESE THREE MODELS TO YOUR schema.prisma FILE
+//  Place them in the Finance section, after StudentList
+// ═══════════════════════════════════════════════════════════════
+
+model ExpenseCategory {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String?
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expenses ExpenseCategoryMap[]
+
+  @@map("expense_categories")
+}
+
+model Expense {
+  id     String  @id @default(uuid())
+  label  String
+  amount Float
+  icon   String?
+
+  createdAt DateTime @default(now())
+
+  categories ExpenseCategoryMap[]
+
+  @@map("expenses")
+}
+
+model ExpenseCategoryMap {
+  id String @id @default(uuid())
+
+  categoryId String
+  category   ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, expenseId])
+  @@map("expense_category_map")
 }

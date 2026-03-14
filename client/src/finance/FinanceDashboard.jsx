@@ -9,6 +9,7 @@ import {
   ChevronDown, ChevronUp, DollarSign, BadgeIndianRupee,
   Layers, FileText, PlusCircle, MinusCircle, X, Plus, Check
 } from "lucide-react";
+const API_URL = import.meta.env.VITE_API_URL;
 const iconMap = {
   Wrench,
   Package,
@@ -428,7 +429,7 @@ export default function FinanceHome() {
     const fetchExpenses = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/finance/list"
+          `${API_URL}/api/finance/list`
         );
 
         const data = await res.json();
@@ -447,7 +448,7 @@ export default function FinanceHome() {
   useEffect(() => {
     const fetchStudentFees = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/finance/getStudentFinance", { credentials: "include" });
+        const res = await fetch(`${API_URL}/api/finance/getStudentFinance`, { credentials: "include" });
         if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -475,7 +476,7 @@ export default function FinanceHome() {
         let groupAItems = [];
         if (savedSchoolId && token) {
           try {
-            const resA = await fetch(`http://localhost:5000/api/teachers/salary/list/${savedSchoolId}`, {
+            const resA = await fetch(`${API_URL}/api/teachers/salary/list/${savedSchoolId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (resA.ok) {
@@ -496,7 +497,7 @@ export default function FinanceHome() {
         let groupBTotal = 0;
         let groupBItems = [];
         try {
-          const resB = await fetch("http://localhost:5000/api/groupb/salary/list/all", { credentials: "include" });
+          const resB = await fetch(`${API_URL}/api/groupb/salary/list/all`, { credentials: "include" });
           if (resB.ok) {
             const dataB = await resB.json();
             if (Array.isArray(dataB) && dataB.length > 0) {
@@ -514,7 +515,7 @@ export default function FinanceHome() {
         let groupCTotal = 0;
         let groupCItems = [];
         try {
-          const resC = await fetch("http://localhost:5000/api/groupc/salary/list/all", { credentials: "include" });
+          const resC = await fetch(`${API_URL}/api/groupc/salary/list/all`, { credentials: "include" });
           if (resC.ok) {
             const dataC = await resC.json();
             if (Array.isArray(dataC) && dataC.length > 0) {
@@ -532,7 +533,7 @@ export default function FinanceHome() {
         let groupDTotal = 0;
         let groupDItems = [];
         try {
-          const resD = await fetch("http://localhost:5000/api/groupd/salary/list/all", { credentials: "include" });
+          const resD = await fetch(`${API_URL}/api/groupd/salary/list/all`, { credentials: "include" });
           if (resD.ok) {
             const dataD = await resD.json();
             if (Array.isArray(dataD) && dataD.length > 0) {
@@ -640,7 +641,7 @@ export default function FinanceHome() {
   }) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/finance/add",
+        `${API_URL}/api/finance/add`,
         {
           method: "POST",
           headers: {
@@ -661,7 +662,7 @@ export default function FinanceHome() {
 
       if (data.success) {
         const reload = await fetch(
-          "http://localhost:5000/api/finance/list"
+          `${API_URL}/api/finance/list`,
         );
 
         const updated = await reload.json();

@@ -8,7 +8,7 @@ import GroupASalary from "./GroupASalary";
 import GroupBSalary from "./GroupBSalary";
 import GroupCSalary from "./GroupCSalary";
 import GroupDSalary from "./GroupDSalary";
-
+const API_URL = import.meta.env.VITE_API_URL;
 
 // ── EXPENSE MODAL HELPERS ────────────────────────────────────────────────────
 const fmtExp = (n) => "₹" + Number(n).toLocaleString("en-IN");
@@ -209,7 +209,7 @@ export default function TeacherSalaryManagement() {
     const openHistoryModal = async (salary) => {
         setSelectedSalary(salary);
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/history/${salary.teacher?.id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/history/${salary.teacher?.id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -221,7 +221,7 @@ export default function TeacherSalaryManagement() {
     const updateSalary = async () => {
         if (!selectedSalary?.id) return;
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/update/${selectedSalary.id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/update/${selectedSalary.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ bonus, deductions: deduction })
@@ -237,7 +237,7 @@ export default function TeacherSalaryManagement() {
     const deleteSalary = async () => {
         if (!selectedSalary?.id) return;
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/delete/${selectedSalary.id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/delete/${selectedSalary.id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -252,7 +252,7 @@ export default function TeacherSalaryManagement() {
     const createSalary = async () => {
         if (!selectedTeacher) { alert("Please select teacher"); return; }
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/teachers/salary/create", {
+        const res = await fetch(`${API_URL}/api/teachers/salary/create`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({
@@ -274,7 +274,7 @@ export default function TeacherSalaryManagement() {
 
     const fetchSchools = async () => {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/teachers/salary/schools", {
+        const res = await fetch(`${API_URL}/api/teachers/salary/schools`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -283,7 +283,7 @@ export default function TeacherSalaryManagement() {
 
     const fetchTeachersBySchool = async (id) => {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/teachers-by-school/${id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/teachers-by-school/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) { setDropdownTeachers([]); return; }
@@ -296,7 +296,7 @@ export default function TeacherSalaryManagement() {
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-            `http://localhost:5000/api/teachers/salary/pay/${salaryId}`,
+            `${API_URL}/api/teachers/salary/pay/${salaryId}`,
             {
                 method: "PATCH",
                 headers: {
@@ -339,7 +339,7 @@ export default function TeacherSalaryManagement() {
         if (!id) { console.log("School ID missing"); return; }
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5000/api/teachers/salary/list/${id}`, {
+            const res = await fetch(`${API_URL}/api/teachers/salary/list/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!res.ok) { console.error("API Error:", res.status); setSchoolTeachers([]); return; }
@@ -365,7 +365,7 @@ export default function TeacherSalaryManagement() {
 
     const fetchAllSalaryHistory = async (id) => {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/teachers/salary/history-by-school/${id}`, {
+        const res = await fetch(`${API_URL}/api/teachers/salary/history-by-school/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
