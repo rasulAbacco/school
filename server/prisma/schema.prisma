@@ -1415,6 +1415,8 @@ model GroupBStaffSalary {
 
   status     String  @default("Active")
   salaryPaid Boolean @default(false)
+}
+
 model SubjectSyllabus {
   id String @id @default(uuid())
 
