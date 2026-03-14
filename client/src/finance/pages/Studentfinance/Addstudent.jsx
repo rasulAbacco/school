@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, ChevronDown, User, Mail, Phone, BookOpen, MapPin, DollarSign } from "lucide-react";
-
+const API_URL = import.meta.env.VITE_API_URL;
 const Addstudent = ({ open, handleClose, addStudentData, editData }) => {
 
     const [student, setStudent] = useState({
@@ -45,7 +45,7 @@ const Addstudent = ({ open, handleClose, addStudentData, editData }) => {
 
     useEffect(() => {
         if (!open) return;
-        fetch("http://localhost:5000/api/finance/schools")
+        fetch(`${API_URL}/api/finance/schools`)
             .then(res => res.json())
             .then(data => setSchools(data));
     }, [open]);
@@ -58,10 +58,10 @@ const Addstudent = ({ open, handleClose, addStudentData, editData }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            let url = "http://localhost:5000/api/finance/addStudentFinance";
+            let url = `${API_URL}/api/finance/addStudentFinance`;
             let method = "POST";
             if (editData) {
-                url = `http://localhost:5000/api/finance/updateStudentFinance/${editData.id}`;
+                url = `${API_URL}/api/finance/updateStudentFinance/${editData.id}`;
                 method = "PUT";
             }
             const response = await fetch(url, {
@@ -90,7 +90,7 @@ const Addstudent = ({ open, handleClose, addStudentData, editData }) => {
     const handleSchoolChange = async (e) => {
         const schoolId = e.target.value;
         setSelectedSchool(schoolId);
-        const res = await fetch(`http://localhost:5000/api/finance/classSections?schoolId=${schoolId}`);
+        const res = await fetch(`${API_URL}/api/finance/classSections?schoolId=${schoolId}`);
         const data = await res.json();
         setClasses(data);
     };
@@ -98,7 +98,7 @@ const Addstudent = ({ open, handleClose, addStudentData, editData }) => {
     const handleClassChange = async (e) => {
         const classId = e.target.value;
         setSelectedClass(classId);
-        const res = await fetch(`http://localhost:5000/api/finance/studentsByClass?classSectionId=${classId}`);
+        const res = await fetch(`${API_URL}/api/finance/studentsByClass?classSectionId=${classId}`);
         const data = await res.json();
         setStudents(data);
     };

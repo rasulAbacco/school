@@ -4,7 +4,7 @@ import {
     CheckCircle, AlertCircle, IndianRupee, X,
     Building2, Briefcase, Download
 } from "lucide-react";
-
+const API_URL = import.meta.env.VITE_API_URL;
 const STYLE = `
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 :root {
@@ -111,10 +111,11 @@ export default function GroupDSalary() {
 
     const fetchStaff = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/groupd/salary/list/all", { credentials: "include" });
+            const res = await fetch(`${API_URL}/api/groupd/salary/list/all`, { credentials: "include" });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            setStaff(data);
-        } catch (err) { console.log(err); }
+            setStaff(Array.isArray(data) ? data : []);
+        } catch (err) { console.log(err); setStaff([]); }
     };
     useEffect(() => { fetchStaff(); }, []);
 
@@ -127,13 +128,13 @@ export default function GroupDSalary() {
     const handleSave = async () => {
         try {
             if (editData) {
-                await fetch(`http://localhost:5000/api/groupd/salary/update/${editData.id}`, {
+                await fetch(`${API_URL}/api/groupd/salary/update/${editData.id}`, {
                     method: "PUT", credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(form),
                 });
             } else {
-                await fetch("http://localhost:5000/api/groupd/salary/create", {
+                await fetch(`${API_URL}/api/groupd/salary/create`, {
                     method: "POST", credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(form),
@@ -146,13 +147,13 @@ export default function GroupDSalary() {
 
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this staff record?")) return;
-        await fetch(`http://localhost:5000/api/groupd/salary/delete/${id}`, { method: "DELETE", credentials: "include" });
+        await fetch(`${API_URL}/api/groupd/salary/delete/${id}`, { method: "DELETE", credentials: "include" });
         fetchStaff();
     };
 
     const handlePay = async (id) => {
         try {
-            await fetch(`http://localhost:5000/api/groupd/salary/pay/${id}`, { method: "PATCH", credentials: "include" });
+            await fetch(`${API_URL}/api/groupd/salary/pay/${id}`, { method: "PATCH", credentials: "include" });
             setPaidIds(prev => new Set([...prev, id]));
         } catch (err) { console.log(err); }
     };

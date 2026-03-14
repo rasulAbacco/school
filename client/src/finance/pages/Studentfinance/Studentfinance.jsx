@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import PageLayout from "../../components/PageLayout";
 import Addstudent from "./Addstudent";
-
+const API_URL = import.meta.env.VITE_API_URL;
 // ── STATIC DISPLAY DATA (unchanged) ──────────────────────────────────────────
 const summary = { total: 60000, paid: 40000, due: 20000, nextDue: "15 Mar 2026" };
 
@@ -552,7 +552,7 @@ export default function StudentFeesPage() {
 
     const fetchStudents = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/finance/getStudentFinance", { credentials: "include" });
+            const res = await fetch(`${API_URL}/api/finance/getStudentFinance`, { credentials: "include" });
             const data = await res.json();
             console.log("Fetched from DB 👉", data);
             setStudents(data);
@@ -562,7 +562,7 @@ export default function StudentFeesPage() {
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure?")) return;
-        await fetch(`http://localhost:5000/api/finance/deleteStudentFinance/${id}`, { method: "DELETE", credentials: "include" });
+        await fetch(`${API_URL}/api/finance/deleteStudentFinance/${id}`, { method: "DELETE", credentials: "include" });
         fetchStudents();
     };
 
