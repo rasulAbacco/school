@@ -689,6 +689,8 @@ async function seedSchool(university, password) {
     },
   });
 
+  
+
   await prisma.user.upsert({
     where: {
       email_schoolId: { email: "admin1@gmail.com", schoolId: school.id },
@@ -703,6 +705,23 @@ async function seedSchool(university, password) {
     },
   });
   console.log("   ✅  Admin: admin1@gmail.com");
+
+    // Finance User
+  await prisma.user.upsert({
+    where: {
+      email_schoolId: { email: "finance1@school.com", schoolId: school.id },
+    },
+    update: {},
+    create: {
+      name: "School Finance",
+      email: "finance1@school.com",
+      password,
+      role: "FINANCE",
+      schoolId: school.id,
+    },
+  });
+
+  console.log("   💰 Finance: finance1@school.com");
 
   await prisma.schoolPromotionConfig.upsert({
     where: { schoolId: school.id },
@@ -905,6 +924,22 @@ async function seedPUC(university, password) {
     },
   });
   console.log("   ✅  Admin: admin2@gmail.com");
+
+  await prisma.user.upsert({
+  where: {
+    email_schoolId: { email: "finance2@school.com", schoolId: school.id },
+  },
+  update: {},
+  create: {
+    name: "PUC Finance",
+    email: "finance2@school.com",
+    password,
+    role: "FINANCE",
+    schoolId: school.id,
+  },
+});
+
+console.log("   💰 Finance: finance2@school.com");
 
   await prisma.schoolPromotionConfig.upsert({
     where: { schoolId: school.id },

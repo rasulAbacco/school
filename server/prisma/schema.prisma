@@ -274,20 +274,27 @@ model School {
   universityId String
   university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
 
-  superAdminAccess     SuperAdminSchoolAccess[]
-  users                User[]
-  students             Student[]
-  parents              Parent[]
-  teachers             TeacherProfile[]
-  academicYears        AcademicYear[]
-  classSections        ClassSection[]
-  subjects             Subject[] // ✅ NEW: central subject registry
-  timetableConfigs     TimetableConfig[]
-  timetableEntries     TimetableEntry[]
-  assessmentTerms      AssessmentTerm[]
-  assessmentGroups     AssessmentGroup[]
-  FinanceProfile       FinanceProfile[]
-  TeacherMonthlySalary TeacherMonthlySalary[]
+  superAdminAccess      SuperAdminSchoolAccess[]
+  users                 User[]
+  students              Student[]
+  parents               Parent[]
+  teachers              TeacherProfile[]
+  academicYears         AcademicYear[]
+  classSections         ClassSection[]
+  subjects              Subject[] // ✅ NEW: central subject registry
+  timetableConfigs      TimetableConfig[]
+  timetableEntries      TimetableEntry[]
+  assessmentTerms       AssessmentTerm[]
+  assessmentGroups      AssessmentGroup[]
+  FinanceProfile        FinanceProfile[]
+  TeacherMonthlySalary  TeacherMonthlySalary[]
+  Stream                Stream[]
+  Course                Course[]
+  SchoolPromotionConfig SchoolPromotionConfig?
+  PromotionLog          PromotionLog[]
+  ExtraClass            ExtraClass[]
+  Meeting               Meeting[]
+  TeacherAttendance     TeacherAttendance[]
 
   @@index([universityId])
   @@index([type])
@@ -529,8 +536,7 @@ model User {
   meetingParticipations    MeetingParticipant[]
   markedAttendances        AttendanceRecord[]   @relation("AttendanceMarkedBy")
   markedTeacherAttendances TeacherAttendance[]  @relation("TeacherAttendanceMarkedBy")
-  teacherProfile TeacherProfile?
-  financeProfile FinanceProfile?
+  financeProfile           FinanceProfile?
 
   @@unique([email, schoolId])
   @@index([role])
@@ -761,12 +767,13 @@ model TeacherProfile {
   panNumber       String?
   aadhaarNumber   String?
 
-  assignments        TeacherAssignment[]
-  documents          TeacherDocument[]
-  timetableEntries   TimetableEntry[]
-  classTeacherOf     ClassSectionAcademicYear[]
-  extraClasses       ExtraClass[]
-  teacherAttendances TeacherAttendance[]
+  assignments          TeacherAssignment[]
+  documents            TeacherDocument[]
+  timetableEntries     TimetableEntry[]
+  classTeacherOf       ClassSectionAcademicYear[]
+  extraClasses         ExtraClass[]
+  teacherAttendances   TeacherAttendance[]
+  TeacherMonthlySalary TeacherMonthlySalary[]
 
   @@index([schoolId])
   @@index([department])
@@ -1356,15 +1363,17 @@ model StreamCombination {
   @@unique([name, streamId])
   @@index([streamId])
   @@map("stream_combinations")
+}
+
 //  Finance 
 model FinanceProfile {
-  id           String  @id @default(uuid())
-  userId       String  @unique
+  id           String   @id @default(uuid())
+  userId       String   @unique
   schoolId     String
   employeeCode String?
   designation  String?
   phone        String?
-  salary       Float?
+  salary       Decimal?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -1379,7 +1388,7 @@ model StudentFinance {
   email     String
   phone     String
   course    String?
-  fees      Float?
+  fees      Decimal?
   address   String?
   createdAt DateTime @default(now())
 
@@ -1414,4 +1423,120 @@ model TeacherMonthlySalary {
 enum SalaryStatus {
   PENDING
   PAID
+}
+
+model StudentList {
+  id Int @id @default(autoincrement())
+
+  name  String
+  email String
+  phone String
+
+  course  String?
+  fees    Decimal?
+  address String?
+
+  createdAt DateTime @default(now())
+
+  @@map("student_list")
+}
+
+// GROUP B STAFF (Junior Faculty)
+
+model GroupBStaffSalary {
+  id Int @id @default(autoincrement())
+
+  name        String
+  designation String
+  school      String
+  department  String?
+
+  basicSalary Decimal
+  allowances  Decimal
+
+  status     String  @default("Active")
+  salaryPaid Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("groupb_staff_salary")
+}
+
+// GROUP C STAFF (Support Staff)
+
+model GroupCStaffSalary {
+  id Int @id @default(autoincrement())
+
+  name     String
+  role     String
+  school   String
+  category String?
+
+  basicSalary Decimal
+  allowances  Decimal
+
+  status     String  @default("Active")
+  salaryPaid Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("groupc_staff_salary")
+}
+
+// GROUP D STAFF (Administrative Staff)
+
+model GroupDStaffSalary {
+  id Int @id @default(autoincrement())
+
+  name     String
+  position String
+  school   String
+  section  String?
+
+  basicSalary Decimal
+  allowances  Decimal
+
+  status     String  @default("Active")
+  salaryPaid Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("groupd_staff_salary")
+}
+
+model ExpenseCategory {
+  id       String  @id @default(uuid())
+  name     String
+  icon     String?
+  color    String?
+  schoolId String?
+
+  expenses ExpenseCategoryMap[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id       String  @id @default(uuid())
+  label    String
+  amount   Float
+  icon     String?
+  schoolId String?
+
+  categories ExpenseCategoryMap[]
+
+  createdAt DateTime @default(now())
+} 
+
+model ExpenseCategoryMap {
+  id         String @id @default(uuid())
+  expenseId  String
+  categoryId String
+
+  expense  Expense         @relation(fields: [expenseId], references: [id])
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
 }

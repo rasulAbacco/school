@@ -671,3 +671,131 @@ export const getProfileImage = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+export const getMyStudent = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const schoolId = req.user?.schoolId;
+ 
+    if (!userId || !schoolId)
+      return res.status(400).json({ message: "Invalid token" });
+ 
+    // 🔹 Versioned cache key
+    const baseKey = `students:me:${schoolId}:${userId}`;
+    const key = await cacheService.buildKey(schoolId, baseKey);
+ 
+    // 🔹 Try cache first
+    const cached = await cacheService.get(key);
+    if (cached) {
+      return res.json({ student: JSON.parse(cached), fromCache: true });
+    }
+ 
+    // 🔹 Fetch from DB
+    const student = await prisma.student.findUnique({
+      where: { id: userId, schoolId },
+      include: {
+        personalInfo: true,
+        enrollments: {
+          include: {
+            classSection: {
+              include: {
+                stream: true,
+                combination: true,
+                course: true,
+                branch: true,
+              },
+            },
+            academicYear: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        parentLinks: {
+          include: {
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+      },
+    });
+ 
+    if (!student)
+      return res.status(404).json({ message: "Student not found" });
+ 
+    // 🔹 Save to cache
+    await cacheService.set(key, student);
+ 
+    return res.json({ student, fromCache: false });
+  } catch (error) {
+    console.error("[getMyStudent]", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+ 
+export const getMyParentStudents = async (req, res) => {
+  try {
+    const parentId = req.user?.id;
+    const schoolId = req.user?.schoolId;
+ 
+    if (!parentId || !schoolId)
+      return res.status(400).json({ message: "Invalid token" });
+ 
+    // 🔹 Versioned cache key
+    const baseKey = `students:parent:${schoolId}:${parentId}`;
+    const key = await cacheService.buildKey(schoolId, baseKey);
+ 
+    // 🔹 Try cache first
+    const cached = await cacheService.get(key);
+    if (cached) {
+      return res.json({ students: JSON.parse(cached), fromCache: true });
+    }
+ 
+    // 🔹 Fetch linked students
+    const links = await prisma.studentParent.findMany({
+      where: {
+        parentId,
+        student: { schoolId },
+      },
+      include: {
+        student: {
+          include: {
+            personalInfo: true,
+            enrollments: {
+              include: {
+                classSection: {
+                  include: {
+                    stream: true,
+                    combination: true,
+                    course: true,
+                    branch: true,
+                  },
+                },
+                academicYear: true,
+              },
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+ 
+    const students = links.map((link) => ({
+      relation: link.relation,
+      isPrimary: link.isPrimary,
+      student: link.student,
+    }));
+ 
+    // 🔹 Save to cache
+    await cacheService.set(key, students);
+ 
+    return res.json({ students, fromCache: false });
+  } catch (error) {
+    console.error("[getMyParentStudents]", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
