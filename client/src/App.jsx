@@ -1,9 +1,9 @@
-// client/src/App.jsx
 import "./App.css";
 import { getAuth } from "./auth/storage";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import AdminRoutes from "./admin/Routes";
 import StudentRoutes from "./student/Routes";
@@ -13,10 +13,9 @@ import ParentRoutes from "./parent/Routes";
 import Finance from "./finance/Routes";
 
 function App() {
-  const [view, setView] = useState("login"); // "login" | "register"
+  const [view, setView] = useState("login");
   const auth = getAuth();
 
-  // ── Not logged in → show Login or Register ──────────────────
   if (!auth) {
     if (view === "register") {
       return <Register onSwitchToLogin={() => setView("login")} />;
@@ -24,24 +23,32 @@ function App() {
     return <Login onSwitchToRegister={() => setView("register")} />;
   }
 
-  // ── Logged in → route by accountType + role ─────────────────
+  return (
+    <Routes>
 
-  if (auth.accountType === "student") return <StudentRoutes />;
+      <Route path="/student/*" element={<StudentRoutes />} />
 
-  if (auth.accountType === "parent") return <ParentRoutes />;
+      <Route path="/parent/*" element={<ParentRoutes />} />
 
-  if (auth.accountType === "superAdmin") return <SuperAdminRoutes />;
+      <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
 
-  if (auth.accountType === "staff") {
-    if (auth.role === "ADMIN") return <AdminRoutes />;
-    if (auth.role === "TEACHER") return <TeacherRoutes />;
-    if (auth.role === "FINANCE") return <Finance />;
-    // SUPER_ADMIN role inside staff (legacy fallback)
-    if (auth.role === "SUPER_ADMIN") return <SuperAdminRoutes />;
-  }
+      <Route path="/admin/*" element={<AdminRoutes />} />
 
-  // fallback — clear bad auth and show login
-  return <Login onSwitchToRegister={() => setView("register")} />;
+      <Route path="/teacher/*" element={<TeacherRoutes />} />
+
+      <Route path="/finance/*" element={<Finance />} />
+
+      {/* Default redirect based on role */}
+      {auth.accountType === "parent" && (
+        <Route path="*" element={<Navigate to="/parent/dashboard" replace />} />
+      )}
+
+      {auth.accountType === "student" && (
+        <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
+      )}
+
+    </Routes>
+  );
 }
 
 export default App;

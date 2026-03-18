@@ -7,6 +7,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import groupBRoutes from "./Financepages/Routes/groupBRoutes.js";
 import groupCRoutes from "./Financepages/Routes/groupCRoutes.js";
 import groupDRoutes from "./Financepages/Routes/groupDRoutes.js";
+import parent from "./parent.js";
 
 
 dotenv.config();
@@ -26,8 +27,9 @@ app.use(express.json());
 // routes
 app.use("/api/auth", authRoutes);
 
-app.use("/api/groupb/salary", groupBRoutes);
-app.use("/api/groupc/salary", groupCRoutes);
-app.use("/api/groupd/salary", groupDRoutes);
+// app.use("/api/groupb/salary", groupBRoutes);
+// app.use("/api/groupc/salary", groupCRoutes);
+// app.use("/api/groupd/salary", groupDRoutes);
+// app.use("/api/parent", parent);
 
 export default app;

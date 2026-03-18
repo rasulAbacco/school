@@ -1,7 +1,7 @@
 // client/src/teacher/components/Sidebar.jsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, User, GraduationCap, X, BookOpen, Trophy,Zap } from "lucide-react";
+import { Home, User, GraduationCap, X, BookOpen, Trophy, Zap } from "lucide-react";
 
 const NAV = [
   { icon: Home, label: "Dashboard", to: "/dashboard" },
