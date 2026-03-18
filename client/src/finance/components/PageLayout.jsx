@@ -11,7 +11,9 @@ function PageLayout({ children }) {
       if (!stored) return null;
       return {
         name: stored.user?.name,
-        role: stored.role,
+        email: stored.user?.email,
+        role: stored.user?.role || stored.role,
+        accountType: stored.accountType,
       };
     } catch (err) {
       console.error("Invalid auth in localStorage");
@@ -26,7 +28,7 @@ function PageLayout({ children }) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar onMenuClick={() => setSidebarOpen(true)} user={user} />
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
