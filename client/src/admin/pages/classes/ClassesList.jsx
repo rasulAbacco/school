@@ -987,12 +987,20 @@ export default function ClassesList() {
   const handleDelete = async (e, id, name) => {
     e.stopPropagation();
     if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
     setDeleting(id);
     try {
       await deleteClassSection(id);
       setClasses((prev) => prev.filter((c) => c.id !== id));
+      setToast({
+        type: "success",
+        msg: `"${name}" deleted successfully`,
+      });
     } catch (err) {
-      alert(err.message);
+      setToast({
+        type: "error",
+        msg: err.message || "Failed to delete class",
+      });
     } finally {
       setDeleting(null);
     }
@@ -1101,7 +1109,7 @@ export default function ClassesList() {
     icon: Clock,
     title: "School Timings",
     desc: "Periods & breaks",
-    path: "/classes/timings",
+    path: "/admin/classes/timings",
     accent: C.slate,
   });
   if (config.showStream)
@@ -1110,7 +1118,7 @@ export default function ClassesList() {
       icon: Waves,
       title: "Manage Streams",
       desc: "Science, Commerce, Arts",
-      path: "/classes/streams",
+      path: "/admin/classes/streams",
       accent: "#6366f1",
       badge: "PUC",
     });
@@ -1120,7 +1128,7 @@ export default function ClassesList() {
       icon: BookOpen,
       title: "Manage Courses",
       desc: "BTech, BA, BCom + branches",
-      path: "/classes/courses",
+      path: "/admin/classes/courses",
       accent: "#10b981",
       badge: config.schoolType,
     });
@@ -1129,7 +1137,7 @@ export default function ClassesList() {
     icon: GraduationCap,
     title: `Create ${config.gradesLabel}`,
     desc: `Add ${config.gradeLabel?.toLowerCase()}s & sections`,
-    path: "/classes/sections",
+    path: "/admin/classes/sections",
     accent: "#10b981",
   });
   setupCards.push({
@@ -1137,7 +1145,7 @@ export default function ClassesList() {
     icon: BookOpen,
     title: "Subjects",
     desc: "Add & assign to classes",
-    path: "/classes/subjects",
+    path: "/admin/classes/subjects",
     accent: "#4f46e5",
   });
   setupCards.push({
@@ -1145,7 +1153,7 @@ export default function ClassesList() {
     icon: Grid3X3,
     title: "Timetable",
     desc: "Build timetables",
-    path: "/classes/timetable",
+    path: "/admin/classes/timetable",
     accent: "#f59e0b",
   });
   setupCards.push({
@@ -1153,7 +1161,7 @@ export default function ClassesList() {
     icon: ArrowRight,
     title: "Promotion",
     desc: `Promote ${config.studentsLabel?.toLowerCase()}`,
-    path: "/classes/promotion",
+    path: "/admin/classes/promotion",
     accent: "#8b5cf6",
   });
   if (config.hasReadmission)
@@ -1162,7 +1170,7 @@ export default function ClassesList() {
       icon: GraduationCap,
       title: "Re-admission",
       desc: "Grade 7 re-admissions",
-      path: "/classes/readmission",
+      path: "/admin/classes/readmission",
       accent: "#f59e0b",
       badge: "Grade 7",
     });
@@ -2064,7 +2072,7 @@ export default function ClassesList() {
                                   icon: Eye,
                                   title: "View",
                                   onClick: () =>
-                                    navigate(`/classes/${cls.id}/timetable`),
+                                    navigate(`/admin/classes/${cls.id}/timetable`),
                                   color: C.textLight,
                                   hoverBg: `${C.sky}22`,
                                 },
@@ -2072,7 +2080,7 @@ export default function ClassesList() {
                                   icon: Edit,
                                   title: "Edit Timetable",
                                   onClick: () =>
-                                    navigate("/classes/timetable", {
+                                    navigate("/admin/classes/timetable", {
                                       state: { sectionId: cls.id },
                                     }),
                                   color: C.textLight,

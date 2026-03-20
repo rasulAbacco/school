@@ -992,7 +992,7 @@ export default function SchoolTimingsPage() {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate("/classes")}
+            onClick={() => navigate("/admin/classes")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -1315,7 +1315,7 @@ export default function SchoolTimingsPage() {
                   : "Save Timings"}
             </button>
             <button
-              onClick={() => navigate("/classes/sections")}
+              onClick={() => navigate("/admin/classes/sections")}
               style={{
                 display: "flex",
                 alignItems: "center",

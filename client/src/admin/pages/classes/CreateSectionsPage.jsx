@@ -458,7 +458,7 @@ export default function CreateSectionsPage() {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate("/classes")}
+            onClick={() => navigate("/admin/classes")}
             className="flex items-center gap-1.5 rounded-xl text-sm font-medium mb-3"
             style={{
               padding: "6px 12px",

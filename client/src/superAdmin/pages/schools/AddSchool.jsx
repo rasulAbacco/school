@@ -4,13 +4,13 @@ import { Building2, MapPin, X, ChevronRight, ChevronLeft, Check, Loader2, Info }
 import { createSchool, updateSchool } from "./components/SchoolsApi";
 
 const SCHOOL_TYPES = [
-  { value: "PRIMARY",       label: "Primary School (Class 1–5)" },
-  { value: "UPPER_PRIMARY", label: "Upper Primary (Class 6–8)" },
-  { value: "HIGH_SCHOOL",   label: "High School (Class 9–10)" },
-  { value: "PUC",           label: "PUC / Pre-University (Class 11–12)" },
-  { value: "DEGREE",        label: "Degree / Undergraduate" },
-  { value: "POSTGRADUATE",  label: "Postgraduate" },
-  { value: "OTHER",         label: "Other" },
+  { label: "Primary School (Class 1–5)", value: "SCHOOL" },
+  { label: "Upper Primary (Class 6–8)", value: "SCHOOL" },
+  { label: "High School (Class 9–10)", value: "SCHOOL" },
+  { label: "PUC / Pre-University (Class 11–12)", value: "PUC" },
+  { label: "Degree / Undergraduate", value: "DEGREE" },
+  { label: "Postgraduate", value: "POSTGRADUATE" },
+  { label: "Other", value: "OTHER" },
 ];
 
 const INIT = {

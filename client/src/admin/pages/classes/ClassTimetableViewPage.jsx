@@ -175,7 +175,7 @@ export default function ClassTimetableViewPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
             <button
-              onClick={() => navigate("/classes")}
+              onClick={() => navigate("/admin/classes")}
               className="flex items-center gap-1.5 rounded-xl text-sm font-medium px-3 py-1.5 border"
               style={{ borderColor: C.border, color: C.mid }}
             >
