@@ -18,21 +18,31 @@ const toBoolean = (val) => {
 const parseTimestamp = (val) => {
   if (!val) return new Date();
 
-  // Try ISO first
+  // ✅ Try ISO format
   const iso = new Date(val);
-  if (!isNaN(iso)) return iso;
+  if (!isNaN(iso.getTime())) return iso;
 
-  // Handle "DD-MM-YYYY HH:mm:ss"
+  // ✅ Handle "DD-MM-YYYY HH:mm:ss"
   const match = val.match(
     /^(\d{1,2})-(\d{1,2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})$/,
   );
 
   if (match) {
     const [, d, m, y, hh, mm, ss] = match;
-    return new Date(`${y}-${m}-${d}T${hh}:${mm}:${ss}Z`);
+
+    const formatted = `${y}-${m.padStart(2, "0")}-${d.padStart(
+      2,
+      "0",
+    )}T${hh}:${mm}:${ss}Z`;
+
+    const parsed = new Date(formatted);
+
+    if (!isNaN(parsed.getTime())) return parsed;
   }
 
-  return new Date(); // fallback
+  // ✅ FINAL FALLBACK (never invalid)
+  console.warn("⚠️ Invalid timestamp received:", val);
+  return new Date();
 };
 
 export const processPayload = async (data = {}) => {
