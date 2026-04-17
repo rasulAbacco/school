@@ -15,14 +15,17 @@ import paymentRoutes from "./src/payment/payment.routes.js";
 import cors from "cors";
 
 const PORT = process.env.PORT || 5000;
+
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://www.edubacotech.com",
-    "https://www.eduabaccotech.com"
+    "https://school-crm-r5dq.onrender.com",
+    "https://www.eduabaccotech.com",  // ✅ correct one
+    "https://eduabaccotech.com"       // ✅ add non-www too
   ],
   credentials: true
 }));
+
 app.use(staff);
 app.use(student);
 app.use(finance);  
