@@ -18,7 +18,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://www.edubacotech.com"
+    "https://www.edubacotech.com",
+    "https://www.eduabaccotech.com"
   ],
   credentials: true
 }));
