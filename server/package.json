@@ -7,6 +7,7 @@
     "start": "nodemon server.js",
     "dev": "nodemon server.js",
     "seed": "node prisma/seed.js",
+    "postinstall": "prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -22,7 +23,8 @@
     "bcryptjs": "^3.0.3",
     "child_process": "^1.0.2",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.0",
+    "dotenv": "^17.3.1",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
     "fs-extra": "^11.3.4",
@@ -32,10 +34,11 @@
     "nanoid": "^5.1.6",
     "node-cron": "^4.2.1",
     "prisma": "^5.22.0",
+    "razorpay": "^2.9.6",
     "redis": "^5.11.0",
     "sharp": "^0.34.5",
+    "socket.io": "^4.8.3",
     "uuid": "^13.0.0",
-    "winston": "^3.19.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

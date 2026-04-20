@@ -1,6 +1,10 @@
 // app.jsx
 import "./App.css";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { connectSocket } from "./socket";
+
 import { getAuth } from "./auth/storage";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
@@ -13,14 +17,41 @@ import FinanceRoutes from "./finance/Routes";
 import LandingPage from "./pages/LandingPage";
 
 
+import PublicLayout from "./LandingPages/components/PublicLayout";
+import Home from "./LandingPages/Home";
+import Pricing from "./LandingPages/pricing/Pricing";
+import About from "./LandingPages/About";
+import Contact from "./LandingPages/ContactUs";
+import ScrollToTop from "./components/ScrollToTop";
+
 function App() {
   const auth = getAuth();
+  useEffect(() => {
+    const userId = auth?.user?.id; // 🔥 FIX HERE
 
+    if (userId) {
+      console.log("🚀 Connecting socket with:", userId);
+      connectSocket(userId);
+    } else {
+      console.log("❌ No user id found in auth");
+    }
+  }, [auth]);
   return (
+    <> 
+    <Toaster position="top-right" reverseOrder={false} />
+    <ScrollToTop /> {/* 🔥 NEW: Scroll to top on route change */}
     <Routes>
+      {/* PUBLIC WEBSITE */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+      </Route>
       {/* PUBLIC */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
+      {/* <Route path="/" element={<Navigate to="/login" />} />
+       */}
       <Route path="/register" element={<Register />} />
 
       {/* PRIVATE */}
@@ -63,6 +94,7 @@ function App() {
         }
       />
     </Routes>
+     </>
   );
 }
 

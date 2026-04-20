@@ -13,7 +13,7 @@ import TimetablePage from "./pages/timetable/TimetablePage";
 import Result from "./pages/result/Result"
 import CertificatesUploadPage from "./pages/Certificates/CertificatesUploadPage";
 import AssignmentsPage from "./pages/assignments/AssignmentsPage";
-
+import TeacherChatPage from "./pages/chat/TeacherChatPage";
 
 function TeacherRoutes() {
   return (
@@ -27,9 +27,10 @@ function TeacherRoutes() {
         <Route path="awards"         element={<AwardsPage />} />
         <Route path="online-classes" element={<OnlineClassesPage />} />
         <Route path="timetable"      element={<TimetablePage />} />
-        <Route path="result"      element={<Result />} />
+        <Route path="results"        element={<Result />} />
         <Route path="certificates" element={<CertificatesUploadPage />} />
         <Route path="assignments" element={<AssignmentsPage />} />
+        <Route path="chat" element={<TeacherChatPage />} />
         <Route path="*"              element={<Navigate to="dashboard" replace />} />
       </Routes>
     </PageLayout>

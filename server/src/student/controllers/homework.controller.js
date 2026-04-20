@@ -57,7 +57,6 @@ async function getStudentContext(studentId) {
 // ═══════════════════════════════════════════════════════════════
 export async function getHomework(req, res) {
   try {
-    
     const studentId = req.user?.id;
     if (!studentId) return err(res, "Unauthorised", 401);
 
@@ -121,7 +120,6 @@ export async function getHomeworkById(req, res) {
 
     const { classSectionId } = enrollment;
 
-    
     const assignment = await prisma.assignment.findFirst({
       where: {
         id,
@@ -150,7 +148,6 @@ export async function getHomeworkById(req, res) {
     });
   } catch (e) {
     console.error("[student.getHomeworkById]", e);
-    
     return err(res, e.message, 500);
   }
 }
