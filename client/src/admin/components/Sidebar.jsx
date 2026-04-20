@@ -1,3 +1,4 @@
+// src/admin/components/Sidebar.jsx
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -16,6 +17,8 @@ import {
   CalendarDays,
   Trophy,
   Medal,
+  Bus,
+  MessageCircle,
 } from "lucide-react";
 
 const NAV = [
@@ -32,7 +35,8 @@ const NAV = [
   { icon: CalendarCheck,   label: "Meetings",    to: "/admin/meetings" },
   { icon: Library,         label: "Curriculum",  to: "/admin/curriculum" },
   { icon: Images,          label: "Gallery",     to: "/admin/gallery" },
-  { icon: Settings,        label: "Settings",    to: "/admin/settings" },
+  { icon: Bus,             label: "Transport", to: "/admin/transport" },
+  { icon: MessageCircle,        label: "Chat",    to: "/admin/chat" },
 ];
 
 const initials = (name = "AU") =>

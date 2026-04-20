@@ -139,14 +139,14 @@ function normalizeCaste(v) {
 function normalizeBoard(v) {
   if (!v) return "";
   const up = v.toString().toUpperCase().trim();
-  const valid = ["KSEEB", "CBSE", "ICSE", "NIOS", "IB", "IGCSE", "STATE", "OTHER"];
+  const valid = ["KSEEB","CBSE","ICSE","NIOS","IB","IGCSE","STATE","OTHER"];
   return valid.includes(up) ? up : "OTHER";
 }
 
 function normalizeStatus(v) {
   if (!v) return "ACTIVE";
   const up = v.toString().toUpperCase().trim();
-  const valid = ["ACTIVE", "INACTIVE", "SUSPENDED", "GRADUATED"];
+  const valid = ["ACTIVE","INACTIVE","SUSPENDED","GRADUATED"];
   return valid.includes(up) ? up : "ACTIVE";
 }
 

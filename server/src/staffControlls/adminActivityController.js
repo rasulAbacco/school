@@ -207,7 +207,6 @@ export async function deleteActivity(req, res) {
       }),
     ]);
 
-
     await cacheService.invalidateSchool(schoolId);
     return ok(res, { message: "Activity archived successfully" });
   } catch (e) {

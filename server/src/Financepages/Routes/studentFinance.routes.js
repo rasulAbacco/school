@@ -2,29 +2,34 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { saveBackup } from "../../utils/cloudBackup.js";
 
+import authMiddleware from "../../middlewares/authMiddleware.js";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.post("/addStudentFinance", async (req, res) => {
+router.post("/addStudentFinance", authMiddleware, async (req, res) => {
   try {
 
-    // console.log("POST BODY 👉", req.body);
+    const schoolId = req.user?.schoolId; // ✅ FIX
+
+    if (!schoolId) {
+      return res.status(400).json({ message: "SchoolId missing in user" });
+    }
 
     const {
-      name, email, phone, course, fees, address,
-      collegeFee, tuitionFee, examFee, transportFee, booksFee, labFee, miscFee, customFees
+      name, email, phone, course, fees,
+      collegeFee, tuitionFee, examFee,
+      transportFee, booksFee, labFee, miscFee, customFees
     } = req.body;
 
-    // Store fee breakdown as JSON in feeBreakdown column (add to schema) or address temporarily
     const feeBreakdown = JSON.stringify({
-      collegeFee:   collegeFee   || 0,
-      tuitionFee:   tuitionFee   || 0,
-      examFee:      examFee      || 0,
+      collegeFee: collegeFee || 0,
+      tuitionFee: tuitionFee || 0,
+      examFee: examFee || 0,
       transportFee: transportFee || 0,
-      booksFee:     booksFee     || 0,
-      labFee:       labFee       || 0,
-      miscFee:      miscFee      || 0,
-      customFees:   customFees   || [],
+      booksFee: booksFee || 0,
+      labFee: labFee || 0,
+      miscFee: miscFee || 0,
+      customFees: customFees || [],
     });
 
     const student = await prisma.studentList.create({
@@ -32,9 +37,10 @@ router.post("/addStudentFinance", async (req, res) => {
         name,
         email,
         phone,
-        course:  course || null,
-        fees:    fees   ? parseFloat(fees) : null,
-        feeBreakdown: feeBreakdown,  // JSON: { tuitionFee, examFee, ... }
+        course: course || null,
+        fees: fees ? parseFloat(fees) : null,
+        feeBreakdown,
+        schoolId, // ✅ NOW WORKS
       }
     });
 await saveBackup({
@@ -53,10 +59,17 @@ await saveBackup({
   }
 });
 
-router.get("/getStudentFinance", async (req, res) => {
+router.get("/getStudentFinance", authMiddleware, async (req, res) => {
   try {
 
-   const students = await prisma.studentList.findMany({
+    const schoolId = req.user?.schoolId; // ✅ ADD THIS
+
+    if (!schoolId) {
+      return res.status(400).json({ message: "SchoolId missing in user" });
+    }
+
+    const students = await prisma.studentList.findMany({
+      where: { schoolId }, // ✅ NOW WORKS
       orderBy: {
         createdAt: "desc"
       }
@@ -70,7 +83,7 @@ router.get("/getStudentFinance", async (req, res) => {
   }
 });
 
-router.put("/updateStudentFinance/:id", async (req, res) => {
+router.put("/updateStudentFinance/:id", authMiddleware, async (req, res) => {
   try {
 
     const id = parseInt(req.params.id);
@@ -125,7 +138,7 @@ await saveBackup({
     res.status(500).json({ message: error.message });
   }
 });
-router.delete("/deleteStudentFinance/:id", async (req, res) => {
+router.delete("/deleteStudentFinance/:id", authMiddleware, async (req, res) => {
   try {
     
     const id = parseInt(req.params.id);
@@ -248,6 +261,29 @@ router.get("/myFees", async (req, res) => {
     res.json(record);
   } catch (error) {
     console.error("myFees error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get("/classFee", async (req, res) => {
+  try {
+    const { classSectionId, academicYearId } = req.query;
+
+    if (!classSectionId) {
+      return res.status(400).json({ message: "classSectionId required" });
+    }
+
+    const fee = await prisma.classFee.findFirst({
+      where: {
+        classSectionId,
+        ...(academicYearId && { academicYearId }),
+      },
+    });
+
+    res.json(fee || null);
+
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });

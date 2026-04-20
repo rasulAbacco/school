@@ -288,8 +288,6 @@ export async function createAssignment(req, res) {
       },
     });
 
-
-
     return ok(res, { data: assignment }, 201);
   } catch (e) {
     console.error("[createAssignment]", e);
@@ -428,7 +426,6 @@ export async function togglePublish(req, res) {
       data:  { status: newStatus },
       select: { id: true, status: true },
     });
-
 
     return ok(res, { data: updated });
   } catch (e) {
