@@ -48,6 +48,7 @@ app.use("/api/parent", parent);
 app.use("/api/device", gpsRoutes);
 app.use("/api/payment", paymentRoutes);
 
+
 const server = createServer(app);
 
 const io = new Server(server, {
