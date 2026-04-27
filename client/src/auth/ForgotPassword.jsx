@@ -335,7 +335,7 @@ export default function ForgotPassword() {
                         </div>
                         <div className="fp-header-title">Forgot Password?</div>
                         <div className="fp-header-sub">
-                            Enter your registered email or phone number.<br />
+                            Enter your registered email.<br />
                             We'll send you a one-time password to reset access.
                         </div>
                     </div>
@@ -345,7 +345,7 @@ export default function ForgotPassword() {
 
                         {/* Input field */}
                         <div>
-                            <label className="fp-field-label">Email or Phone Number</label>
+                            <label className="fp-field-label">Email</label>
                             <div className="fp-input-wrap">
                                 <span className="fp-input-icon">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -355,7 +355,7 @@ export default function ForgotPassword() {
                                 </span>
                                 <input
                                     className="fp-input"
-                                    placeholder="Enter email or phone"
+                                    placeholder="Enter email"
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && !loading && handleSendOtp()}
