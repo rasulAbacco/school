@@ -106,3 +106,6 @@ build/
 # Logs
 logs
 *.log
+
+*.mp4
+client/public/Demo/*.mp4
