@@ -740,6 +740,102 @@ export default function Home() {
                 </div>
             </section>
 
+            <section
+                className="py-20 bg-cover bg-center"
+                style={{
+                    backgroundImage:
+                    "linear-gradient(rgba(248,251,255,0.97), rgba(248,251,255,0.97)), url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1600&q=80&auto=format&fit=crop')",
+                }}
+                >
+                <div className="max-w-7xl mx-auto px-4">
+                    
+                    {/* Header */}
+                    <div className="text-center mb-14">
+                    <div
+                        className="inline-flex items-center gap-2 px-4 py-1 rounded-full border text-xs font-semibold uppercase tracking-widest mb-4"
+                        style={{ background: "#e8f3fd", borderColor: "#BDDDFC", color: "#6A89A7" }}
+                    >
+                        🚀 Upcoming Features
+                    </div>
+
+                    <h2
+                        className="text-4xl font-black mb-4"
+                        style={{ color: "#1a2533", fontFamily: "Georgia, serif" }}
+                    >
+                        What’s Coming Next
+                    </h2>
+
+                    <p className="text-base max-w-xl mx-auto" style={{ color: "#6A89A7" }}>
+                        We’re building smarter tools to make your school system even more powerful and future-ready.
+                    </p>
+                    </div>
+
+                    {/* Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    {/* AI Programming */}
+                    <div className="rounded-2xl p-6 bg-white border hover:-translate-y-1 transition-all"
+                        style={{ borderColor: "#e2edf7", boxShadow: "0 6px 24px rgba(106,137,167,0.08)" }}>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                        <PencilLine size={22} color="#6A89A7" />
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                            Coming Soon
+                        </span>
+                        </div>
+
+                        <h3 className="text-lg font-bold mb-2" style={{ color: "#384959" }}>
+                        AI Programming Assistant
+                        </h3>
+
+                        <p className="text-sm" style={{ color: "#6A89A7" }}>
+                        Automate academic workflows, generate reports, and assist teachers with intelligent AI-based tools.
+                        </p>
+                    </div>
+
+                    {/* Syllabus */}
+                    <div className="rounded-2xl p-6 bg-white border hover:-translate-y-1 transition-all"
+                        style={{ borderColor: "#e2edf7", boxShadow: "0 6px 24px rgba(106,137,167,0.08)" }}>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                        <BookOpen size={22} color="#6A89A7" />
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                            Coming Soon
+                        </span>
+                        </div>
+
+                        <h3 className="text-lg font-bold mb-2" style={{ color: "#384959" }}>
+                        Syllabus Management
+                        </h3>
+
+                        <p className="text-sm" style={{ color: "#6A89A7" }}>
+                        Organize subjects, chapters, and curriculum in a structured digital format accessible to teachers and students.
+                        </p>
+                    </div>
+
+                    {/* Textbook Pages */}
+                    <div className="rounded-2xl p-6 bg-white border hover:-translate-y-1 transition-all"
+                        style={{ borderColor: "#e2edf7", boxShadow: "0 6px 24px rgba(106,137,167,0.08)" }}>
+                        
+                        <div className="flex items-center justify-between mb-4">
+                        <FileText size={22} color="#6A89A7" />
+                        <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold">
+                            Coming Soon
+                        </span>
+                        </div>
+
+                        <h3 className="text-lg font-bold mb-2" style={{ color: "#384959" }}>
+                        Textbook Page Upload
+                        </h3>
+
+                        <p className="text-sm" style={{ color: "#6A89A7" }}>
+                        Upload and manage textbook pages, notes, and learning materials directly within the platform.
+                        </p>
+                    </div>
+
+                    </div>
+                </div>
+                </section>
             {/* ── CTA ── */}
             <section
                 id="contact"
