@@ -11,6 +11,8 @@ import {
   resetPassword as resetPasswordService
 } from "./auth.service.js";
 
+
+
 const handle = (serviceFn) => async (req, res) => {
   try {
     const result = await serviceFn(req.body);
@@ -46,10 +48,12 @@ export const loginFinance = handle(loginFinanceService);
 export const forgotPassword = async (req, res) => {
   try {
     const { identifier } = req.body;
+
     const result = await sendOtp(identifier);
+
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 

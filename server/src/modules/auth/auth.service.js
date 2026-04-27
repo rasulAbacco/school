@@ -3,7 +3,7 @@
 import { generateToken } from "./auth.utils.js";
 import prisma from "../../lib/prisma.js";
 import bcrypt from "bcrypt";
-
+import { sendEmail } from "../../utils/mail.js";
 // ── Super Admin ────────────────────────────────────────────────────────────
 
 export const registerSuperAdminService = async ({
@@ -138,6 +138,29 @@ const detectPortalByEmail = async (email) => {
   return null;
 };
 
+const findUserByIdentifier = async (identifier) => {
+
+  // ✅ STUDENT (email is inside student table)
+  let user = await prisma.student.findFirst({
+    where: {
+      email: identifier
+    }
+  });
+  if (user) return { user, model: "student" };
+
+  // ✅ TEACHER (email is inside user table)
+  user = await prisma.teacherProfile.findFirst({
+    where: {
+      user: {
+        email: identifier
+      }
+    },
+    include: { user: true }
+  });
+  if (user) return { user, model: "teacher" };
+
+  return null;
+};
 export const loginStaffService = async ({ email, password, selectedRole }) => {
   const user = await prisma.user.findFirst({
     where: { email, isActive: true },
@@ -439,14 +462,12 @@ const user = await prisma.user.findFirst({
 }
 
 
-export const sendOtp = async (identifier) => {
-  const user =
-    await prisma.user.findFirst({ where: { email: identifier } }) ||
-    await prisma.student.findFirst({ where: { email: identifier } }) ||
-    await prisma.parent.findFirst({ where: { email: identifier } }) ||
-    await prisma.superAdmin.findFirst({ where: { email: identifier } });
 
-  if (!user) throw new Error("User not found");
+
+export const sendOtp = async (identifier) => {
+  const result = await findUserByIdentifier(identifier);
+
+  if (!result) throw new Error("User not found");
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -454,15 +475,17 @@ export const sendOtp = async (identifier) => {
     data: {
       identifier,
       otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000)
-    }
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    },
   });
+
+  // ✅ SEND EMAIL HERE
+  await sendEmail(identifier, otp);
 
   console.log("OTP:", otp);
 
   return { message: "OTP sent successfully" };
 };
-
 export const verifyOtp = async (identifier, otp) => {
   const record = await prisma.otp.findFirst({
     where: { identifier, otp }
@@ -484,25 +507,34 @@ export const verifyOtp = async (identifier, otp) => {
 
 
 export const resetPassword = async (identifier, newPassword) => {
-  // ✅ find user (email or phone)
-const user = await prisma.user.findFirst({
-  where: {
-    email: identifier
-  }
-});
+  const result = await findUserByIdentifier(identifier);
 
-  if (!user) {
+  if (!result) {
     throw new Error("User not found");
   }
 
-  // 🔐 hash password
+  const { user, model } = result;
+
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  // ✅ update password
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { password: hashedPassword }
-  });
+  // ✅ HANDLE EACH MODEL CORRECTLY
+  if (model === "student") {
+    await prisma.student.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+  }
+
+  else if (model === "teacher") {
+    await prisma.user.update({
+      where: { id: user.userId }, // 🔥 IMPORTANT
+      data: { password: hashedPassword },
+    });
+  }
+
+  else {
+    throw new Error("Unsupported user type");
+  }
 
   return { message: "Password reset successful" };
 };
