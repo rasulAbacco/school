@@ -15,6 +15,8 @@ import trackingRoutes from "./src/gpsTracking/tracking.routes.js";
 import paymentRoutes from "./src/payment/payment.routes.js";
 import whatsappRoutes from "./src/whatsapp/whatsapp.routes.js";
 import "./src/whatsapp/birthdayCron.js";
+
+
 import dotenv from "dotenv";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
