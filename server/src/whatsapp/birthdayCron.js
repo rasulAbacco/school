@@ -2,8 +2,9 @@ import cron from "node-cron";
 import axios from "axios";
 import { prisma } from "../config/db.js";
 
-cron.schedule("0 9 * * *", async () => {
-  console.log("Birthday cron started");
+// ✅ CHANGED HERE (IMPORTANT)
+cron.schedule("30 3 * * *", async () => {
+  console.log("Birthday cron started (9 AM IST)");
 
   try {
     const today = new Date();
@@ -31,15 +32,21 @@ cron.schedule("0 9 * * *", async () => {
 
         const schoolName = "Sri Vignan School";
 
+        let cleanPhone = phone?.replace(/\D/g, "");
+
+        if (cleanPhone.length === 10) {
+          cleanPhone = "91" + cleanPhone;
+        }
+
         await axios.post(
           `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
           {
             messaging_product: "whatsapp",
-            to: phone.replace(/\D/g, ""),
+            to: cleanPhone,
             type: "template",
             template: {
-              name: "birthday",
-              language: { code: "en" },
+              name: "birthday_message",
+              language: { code: "en_US" },
               components: [
                 {
                   type: "body",
@@ -57,9 +64,9 @@ cron.schedule("0 9 * * *", async () => {
               "Content-Type": "application/json"
             }
           }
-        );
+        ); 
 
-        console.log(`Sent to ${name}`);
+        console.log(`✅ Birthday wish sent to ${name}`);
       }
     }
   } catch (error) {
