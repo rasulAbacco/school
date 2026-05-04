@@ -134,12 +134,12 @@ enum ExtraClassType {
 }
 
 enum MeetingType {
-  STAFF
-  PARENT
-  STUDENT
+  TEACHING_STAFF
+  NON_TEACHING_STAFF
+  PARENTS
+  STUDENTS
   GENERAL
   BOARD
-  CUSTOM
 }
 
 enum MeetingStatus {
@@ -1204,16 +1204,17 @@ model Meeting {
   startTime   String
   endTime     String
 
-  venueType   String?
-  venueDetail String?
-  location    String?
-  meetingLink String?
-  notes       String?
+  venueType     String?
+  venueDetail   String?
+  location      String?
+  meetingLink   String?
+  notes         String?
+  contactNumber String?
 
-  reminderSentAt DateTime?
-
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  reminderSentAt  DateTime?
+  scheduledSentAt DateTime?
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   academicYearId String?
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)

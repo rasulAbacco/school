@@ -1,6 +1,7 @@
 // server/src/staffControlls/meetingController.js
 import { prisma } from "../config/db.js";
 import cacheService from "../utils/cacheService.js";
+
 /* ─── helpers ─────────────────────────────────────────────────── */
 const schoolId = (req) => req.user.schoolId;
 const userId = (req) => req.user.id;
@@ -77,6 +78,45 @@ function buildParticipants({
 
   return rows;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   GET /api/meetings/staff
+   Returns all non-resigned staff profiles for the school.
+   Used in the Non-Teaching Staff meeting type participant picker.
+═══════════════════════════════════════════════════════════════ */
+export const getMeetingStaff = async (req, res) => {
+  try {
+    const sid = schoolId(req);
+
+    const staff = await prisma.staffProfile.findMany({
+      where: {
+        schoolId: sid,
+        groupType: "Group B",
+        NOT: { status: "RESIGNED" },
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: [{ firstName: "asc" }],
+    });
+
+    const result = staff
+      .map((s) => ({
+        staffId: s.id,
+        userId: s.userId ?? s.id,
+        name: `${s.firstName} ${s.lastName ?? ""}`.trim(),
+        role: s.role ?? "",
+        groupType: s.groupType ?? "",
+        email: s.email ?? s.user?.email ?? "",
+        phone: s.phone ?? "",
+      }));
+
+    return res.json({ staff: result });
+  } catch (err) {
+    console.error("getMeetingStaff:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 /* ═══════════════════════════════════════════════════════════════
    GET /api/meetings/class-sections/:classSectionId/teachers
@@ -173,7 +213,6 @@ export const getMeetingStats = async (req, res) => {
       },
     };
 
-    // ✅ FIX 1: stringify before storing so JSON.parse on cache read works correctly
     await cacheService.set(key, JSON.stringify(responseData));
 
     return res.json(responseData);
@@ -245,7 +284,6 @@ export const getMeetings = async (req, res) => {
 
     const responseData = { meetings, total };
 
-    // ✅ FIX 1: stringify before storing so JSON.parse on cache read works correctly
     await cacheService.set(key, JSON.stringify(responseData));
 
     return res.json(responseData);
@@ -285,7 +323,7 @@ export const getMeetingById = async (req, res) => {
         participants: {
           include: {
             user: { select: { id: true, name: true, email: true } },
-            parent: { select: { id: true, name: true, email: true } },
+            parent: { select: { id: true, name: true, email: true, phone: true } },
           },
         },
         students: {
@@ -302,7 +340,6 @@ export const getMeetingById = async (req, res) => {
 
     const responseData = { data: meeting };
 
-    // ✅ FIX 1: stringify before storing so JSON.parse on cache read works correctly
     await cacheService.set(key, JSON.stringify(responseData));
 
     return res.json(responseData);
@@ -311,6 +348,7 @@ export const getMeetingById = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 /* ═══════════════════════════════════════════════════════════════
    POST /api/meetings
 ═══════════════════════════════════════════════════════════════ */
@@ -330,12 +368,14 @@ export const createMeeting = async (req, res) => {
       meetingLink,
       academicYearId,
       classSectionIds = [],
-      coordinatorUserId, // legacy single-coord
+      coordinatorUserId,
       participantUserIds = [],
-      perSectionCoordinators = [], // ← NEW: [{ userId, classSectionId }]
+      perSectionCoordinators = [],
       externalParticipants = [],
       autoInviteParents = false,
+      autoInviteStudents = false,
       studentIds = [],
+      contactNumber,
     } = req.body;
 
     if (!title || !meetingDate || !startTime || !endTime) {
@@ -351,8 +391,9 @@ export const createMeeting = async (req, res) => {
       externalParticipants,
     });
 
-    // Auto-invite parents
-    if (autoInviteParents && classSectionIds.length > 0) {
+    // ── Auto-invite parents (PARENTS meeting type or flag) ────────────────
+    const shouldInviteParents = autoInviteParents || type === "PARENTS";
+    if (shouldInviteParents && classSectionIds.length > 0) {
       const enrollments = await prisma.studentEnrollment.findMany({
         where: {
           classSectionId: { in: classSectionIds },
@@ -378,6 +419,23 @@ export const createMeeting = async (req, res) => {
       }
     }
 
+    // ── Auto-add students (STUDENTS meeting type or flag) ─────────────────
+    let finalStudentIds = [...studentIds];
+    const shouldInviteStudents = autoInviteStudents || type === "STUDENTS";
+    if (shouldInviteStudents && classSectionIds.length > 0) {
+      const enrollments = await prisma.studentEnrollment.findMany({
+        where: {
+          classSectionId: { in: classSectionIds },
+          ...(academicYearId ? { academicYearId } : {}),
+          status: "ACTIVE",
+          student: { schoolId: sid },
+        },
+        select: { studentId: true },
+      });
+      const autoStudentIds = enrollments.map((e) => e.studentId);
+      finalStudentIds = [...new Set([...finalStudentIds, ...autoStudentIds])];
+    }
+
     const meeting = await prisma.meeting.create({
       data: {
         title,
@@ -397,7 +455,10 @@ export const createMeeting = async (req, res) => {
           create: classSectionIds.map((csId) => ({ classSectionId: csId })),
         },
         participants: { create: participantsToCreate },
-        students: { create: studentIds.map((sId) => ({ studentId: sId })) },
+        students: {
+          create: finalStudentIds.map((sId) => ({ studentId: sId })),
+        },
+        contactNumber: contactNumber || null, 
       },
       include: {
         organizer: { select: { id: true, name: true } },
@@ -443,24 +504,27 @@ export const updateMeeting = async (req, res) => {
       meetingLink,
       academicYearId,
       classSectionIds,
-      coordinatorUserId, // legacy
+      coordinatorUserId,
       participantUserIds = [],
-      perSectionCoordinators = [], // ← NEW: [{ userId, classSectionId }]
+      perSectionCoordinators = [],
       externalParticipants = [],
+      autoInviteParents = false,
+      autoInviteStudents = false,
+      contactNumber,
     } = req.body;
 
     const rebuildParticipants =
-      classSectionIds !== undefined ||
-      participantUserIds.length > 0 ||
       perSectionCoordinators.length > 0 ||
-      externalParticipants.length > 0 ||
-      coordinatorUserId !== undefined;
+      participantUserIds.length > 0 ||
+      coordinatorUserId;
 
     if (rebuildParticipants) {
       await prisma.meetingParticipant.deleteMany({ where: { meetingId: id } });
     }
+
     if (classSectionIds !== undefined) {
       await prisma.meetingClass.deleteMany({ where: { meetingId: id } });
+      await prisma.meetingStudent.deleteMany({ where: { meetingId: id } });
     }
 
     const participantsToCreate = rebuildParticipants
@@ -471,6 +535,61 @@ export const updateMeeting = async (req, res) => {
           externalParticipants,
         })
       : [];
+
+    // ── Auto-invite parents on update ─────────────────────────────────────
+    const resolvedType = type ?? existing.type;
+    const resolvedClassSectionIds = classSectionIds ?? [];
+    const resolvedAcademicYearId = academicYearId ?? existing.academicYearId;
+
+    const shouldInviteParents =
+      autoInviteParents || resolvedType === "PARENTS";
+    if (
+      shouldInviteParents &&
+      rebuildParticipants &&
+      resolvedClassSectionIds.length > 0
+    ) {
+      const enrollments = await prisma.studentEnrollment.findMany({
+        where: {
+          classSectionId: { in: resolvedClassSectionIds },
+          ...(resolvedAcademicYearId ? { academicYearId: resolvedAcademicYearId } : {}),
+          status: "ACTIVE",
+          student: { schoolId: sid },
+        },
+        include: {
+          student: { include: { parentLinks: { include: { parent: true } } } },
+        },
+      });
+      const seenParentIds = new Set();
+      for (const enrollment of enrollments) {
+        for (const link of enrollment.student.parentLinks) {
+          if (!seenParentIds.has(link.parentId)) {
+            seenParentIds.add(link.parentId);
+            participantsToCreate.push({ type: "PARENT", parentId: link.parentId });
+          }
+        }
+      }
+    }
+
+    // ── Auto-add students on update ───────────────────────────────────────
+    let autoStudentCreates = [];
+    const shouldInviteStudents =
+      autoInviteStudents || resolvedType === "STUDENTS";
+    if (
+      shouldInviteStudents &&
+      classSectionIds !== undefined &&
+      resolvedClassSectionIds.length > 0
+    ) {
+      const enrollments = await prisma.studentEnrollment.findMany({
+        where: {
+          classSectionId: { in: resolvedClassSectionIds },
+          ...(resolvedAcademicYearId ? { academicYearId: resolvedAcademicYearId } : {}),
+          status: "ACTIVE",
+          student: { schoolId: sid },
+        },
+        select: { studentId: true },
+      });
+      autoStudentCreates = enrollments.map((e) => ({ studentId: e.studentId }));
+    }
 
     const meeting = await prisma.meeting.update({
       where: { id },
@@ -502,6 +621,10 @@ export const updateMeeting = async (req, res) => {
         ...(participantsToCreate.length
           ? { participants: { create: participantsToCreate } }
           : {}),
+        ...(autoStudentCreates.length
+          ? { students: { create: autoStudentCreates } }
+          : {}),
+        ...(contactNumber !== undefined ? { contactNumber } : {}),
       },
       include: {
         organizer: { select: { id: true, name: true } },
@@ -539,7 +662,6 @@ export const deleteMeeting = async (req, res) => {
       where: { id: req.params.id },
     });
 
-    // 🔥 Invalidate all meeting-related cache for this school
     await cacheService.invalidateSchool(sid);
 
     return res.json({ message: "Deleted" });
@@ -548,6 +670,7 @@ export const deleteMeeting = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 /* ═══════════════════════════════════════════════════════════════
    PATCH /api/meetings/:id/status
 ═══════════════════════════════════════════════════════════════ */
@@ -609,32 +732,189 @@ export const updateMeetingNotes = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+/* ─── WhatsApp helpers ────────────────────────────────────────── */
+import axios from "axios";
+
+const formatPhone = (phone) => {
+  let clean = phone?.replace(/\D/g, "");
+  if (!clean) return null;
+  if (clean.length === 10) clean = "91" + clean;
+  return clean;
+};
+
+const cleanText = (text) => {
+  return (text || "")
+    .replace(/\n/g, " ")
+    .replace(/\t/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 /* ═══════════════════════════════════════════════════════════════
    PATCH /api/meetings/:id/reminder
+   ─────────────────────────────────────────────────────────────
+   Called when admin clicks "Send Reminder" on the frontend.
+   Sends the  meeting_scheduled  WhatsApp template to all
+   participants / parents and records scheduledSentAt.
+
+   ✅ Does NOT touch reminderSentAt — that field is owned by
+      the cron job (meetingReminderCron.js) which fires the
+      meeting_reminder template 2 minutes before the meeting.
 ═══════════════════════════════════════════════════════════════ */
 export const sendMeetingReminder = async (req, res) => {
   try {
     const sid = schoolId(req);
+    const { id } = req.params;
 
-    const existing = await prisma.meeting.findFirst({
-      where: { id: req.params.id, schoolId: sid },
+    const meeting = await prisma.meeting.findFirst({
+      where: { id, schoolId: sid },
+      include: {
+        organizer: true,
+        school: true,
+        participants: {
+          include: {
+            user: {
+              include: {
+                teacherProfile: true,  // ✅ Teacher phones
+                StaffProfile: true,    // ✅ Staff phones (capital S)
+              },
+            },
+            parent: true,
+          },
+        },
+        students: {
+          include: {
+            student: {
+              include: {
+                parentLinks: {
+                  include: { parent: true },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
-    if (!existing)
+    if (!meeting) {
       return res.status(404).json({ message: "Meeting not found" });
+    }
 
-    const meeting = await prisma.meeting.update({
-      where: { id: req.params.id },
-      data: { reminderSentAt: new Date() },
+    const schoolName = meeting.school?.name || "Your School";
+    const date      = new Date(meeting.meetingDate).toLocaleDateString("en-IN");
+    const time      = meeting.startTime;
+    const location  =
+      meeting.venueType === "ONLINE"
+        ? meeting.meetingLink || "Online"
+        : meeting.venueDetail || "School";
+    const topic = meeting.description || "Meeting Discussion";
+
+    /* ── Send meeting_scheduled template ── */
+    const sendScheduledMessage = async (phone, name) => {
+      const cleanPhone = formatPhone(phone);
+      if (!cleanPhone) {
+        console.log("❌ Invalid phone:", phone);
+        return;
+      }
+      console.log("📤 Sending meeting_scheduled to:", cleanPhone, name);
+      try {
+        const response = await axios.post(
+          `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+          {
+            messaging_product: "whatsapp",
+            to: cleanPhone,
+            type: "template",
+            template: {
+              name: "meeting_scheduled",          // ← schedule template
+              language: { code: "en_US" },
+              components: [
+                {
+                  type: "body",
+                  parameters: [
+                    { type: "text", text: cleanText(name || "User") },
+                    { type: "text", text: cleanText(meeting.title) },
+                    { type: "text", text: cleanText(topic) },
+                    { type: "text", text: cleanText(date) },
+                    { type: "text", text: cleanText(time) },
+                    { type: "text", text: cleanText(location) },
+                    { type: "text", text: cleanText(schoolName) },
+                    { type: "text", text: cleanText(meeting.contactNumber || "N/A") },
+                  ],
+                },
+              ],
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("✅ Sent:", response.data);
+      } catch (err) {
+        console.error("❌ WhatsApp Error:", err.response?.data || err.message);
+      }
+    };
+
+    // ✅ Send to USERS (Teachers + Staff)
+    for (const p of meeting.participants) {
+      if (p.type === "USER") {
+        const phone =
+          p.user?.teacherProfile?.phone || p.user?.StaffProfile?.phone;
+        if (!phone) {
+          console.log("❌ No phone for user:", p.user?.name);
+          continue;
+        }
+        await sendScheduledMessage(phone, p.user?.name);
+      }
+
+      // ✅ Send to direct PARENT participants
+      if (p.type === "PARENT") {
+        if (!p.parent?.phone) {
+          console.log("❌ No phone for parent:", p.parent?.name);
+          continue;
+        }
+        await sendScheduledMessage(p.parent.phone, p.parent.name);
+      }
+    }
+
+    // ✅ Send to STUDENTS → via their parents
+    for (const s of meeting.students) {
+      const student = s.student;
+      if (!student?.parentLinks?.length) {
+        console.log("❌ No parents for student:", student?.name);
+        continue;
+      }
+      for (const link of student.parentLinks) {
+        const parent = link.parent;
+        if (!parent?.phone) {
+          console.log("❌ Parent has no phone:", parent?.name);
+          continue;
+        }
+        await sendScheduledMessage(parent.phone, parent.name || student.name);
+      }
+    }
+
+    // ✅ Only set scheduledSentAt here.
+    //    reminderSentAt is set exclusively by the cron job AFTER
+    //    it sends the meeting_reminder template (2 min before meeting).
+    const updated = await prisma.meeting.update({
+      where: { id },
+      data: { scheduledSentAt: new Date() },
     });
 
-    // 🔥 Invalidate school-level cache
     await cacheService.invalidateSchool(sid);
 
-    return res.json({ data: meeting });
+    return res.json({
+      success: true,
+      message: "WhatsApp schedule notifications sent",
+      data: updated,
+    });
   } catch (err) {
-    console.error("sendMeetingReminder:", err);
-    return res.status(500).json({ message: "Server error" });
+    console.error("sendMeetingReminder:", err.response?.data || err.message);
+    return res.status(500).json({ message: "Failed to send reminders" });
   }
 };
 
@@ -666,6 +946,7 @@ export const markParticipantAttendance = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 /* ═══════════════════════════════════════════════════════════════
    PATCH /api/meetings/:id/students/:studentId/attendance
 ═══════════════════════════════════════════════════════════════ */

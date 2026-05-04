@@ -16,6 +16,7 @@ import trackingRoutes from "./src/gpsTracking/tracking.routes.js";
 import paymentRoutes from "./src/payment/payment.routes.js";
 import whatsappRoutes from "./src/whatsapp/whatsapp.routes.js";
 import "./src/whatsapp/birthdayCron.js";
+import "./src/whatsapp/meetingReminderCron.js";
 import contactRoutes from "./src/contactUs/contact.route.js";
 
 
