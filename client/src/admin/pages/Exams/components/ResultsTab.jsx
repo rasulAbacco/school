@@ -18,6 +18,7 @@ import {
   Minus,
   Download,
   FileText,
+  TrendingDown,
 } from "lucide-react";
 import { getToken } from "../../../../auth/storage.js";
 import StudentReportModal from "./StudentReportModal.jsx";
@@ -35,7 +36,7 @@ const C = {
   hover: "#EDF3FA",
   success: "#059669",
   warn: "#d97706",
-  danger: "#dc2626",
+  danger: "#ff7300",
   blue: "#384959",
   purple: "#6A89A7",
 };
@@ -69,8 +70,8 @@ function gradeColor(grade) {
   if (grade === "B") return { color: "#7c3aed", bg: "#f5f3ff" };
   if (grade === "C") return { color: "#d97706", bg: "#fffbeb" };
   if (grade === "D") return { color: "#ea580c", bg: "#fff7ed" };
-  if (grade === "F") return { color: "#dc2626", bg: "#fef2f2" };
-  if (grade === "AB") return { color: "#6b7280", bg: "#f9fafb" };
+  if (grade === "F") return { color: "#125a1f", bg: "#fef2f2" };
+  if (grade === "AB") return { color: "#30568f", bg: "#f9fafb" };
   return { color: C.mid, bg: "#f1f5f9" };
 }
 
@@ -1034,7 +1035,7 @@ function ClassDetailView({ cs, academicYearId, onBack }) {
                   accent: C.dark,
                 },
                 { label: "Passed", val: passed, accent: C.success },
-                { label: "Failed", val: failed, accent: C.danger },
+                { label: "Below Average", val: failed, accent: C.danger },
                 { label: "Absent", val: absent, accent: C.mid },
                 {
                   label: "Class Avg",
@@ -1578,8 +1579,8 @@ export default function ResultsTab({ academicYearId, academicYearLabel }) {
           accent={C.success}
         />
         <StatCard
-          icon={XCircle}
-          label="Failed"
+          icon={TrendingDown}
+          label="Below Average"
           value={totalFailed}
           accent={C.danger}
         />
